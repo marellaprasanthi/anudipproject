@@ -1,0 +1,181 @@
+package lab;
+import java.util.Scanner;
+public class BattleShip {
+	public static int rows = 10;
+	public static int cols = 10;
+	public static int playersships;
+    public static int computerShips;
+	public static String[][] matrix=new String[rows][cols];
+	public static int[][] missedguesses=new int[rows][cols];
+	 public static Scanner input = new Scanner(System.in); // Declare Scanner here
+	public static void main(String[] args) {
+		System.out.println("*** Welcome to Battle Ships game ");
+		System.out.println("Right now,the sea is empty");
+		createOceanMap(); //create ocean map
+		DeployPlayersship();//deploy players ships
+		DeployComputerShips();//deploy computer ships
+		 do {
+	            Battle();//battle
+	        } while (BattleShip.playersships != 0 && BattleShip.computerShips != 0);
+
+	        // Close the Scanner here
+	        input.close();
+	        //Step 5 - Game over
+	        gameOver();
+		
+	}
+	public static void createOceanMap() {
+      // Display the matrix with indices
+		System.out.print("  ");
+		for (int i = 0; i < cols; i++) {
+            System.out.print(i);//print top row indices
+            }
+		System.out.println();
+		for(int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                matrix[i][j] = " ";
+                if (j == 0)
+                    System.out.print(i + "|" + matrix[i][j]);
+                else if (j == matrix[i].length - 1)
+                    System.out.print(matrix[i][j] + "|" + i);
+                else
+                    System.out.print(matrix[i][j]);
+            }
+            System.out.println();
+		}
+        // Print the bottom row with column indices
+        System.out.print("  ");
+        for (int j = 0; j < cols; j++) {
+            System.out.print(j);
+             }
+	}
+       public static void DeployPlayersship(){
+        	  System.out.println("\nDeploy your ships");
+        	  BattleShip.playersships = 5;
+        	  for(int i=0;i< BattleShip.playersships; ) {
+        		  System.out.print("Enter X coordinate for your ship: "); 
+                  int x = input.nextInt(); 
+                  System.out.print("Enter Y coordinate for your ship: "); 
+                  int y = input.nextInt(); 
+                  
+        	      if((x>=0 && x<rows )&& (y>=0 && y<cols) && (matrix[x][y]==" ") )
+        	      {
+        	    	matrix[x][y]="@";
+        	    	i++;
+        	      }
+        	       else if( (x>=0 && x<rows )&& (y>=0 && y<cols) && (matrix[x][y]=="@"))
+        	    	 System.out.println("you can NOT place two or more ships on the same location");
+        	       else if((x<0 || x>=rows)||(y<0 || y>=cols)) 
+        	    	 System.out.println("you can’t place ships outside the 10 by 10 grid");
+        	  }
+        	printOceanMap();
+      }
+       public static void DeployComputerShips() {
+        	System.out.println("Deploy computer’s ships");
+        	BattleShip.computerShips = 5;
+            for(int i=1;i<=BattleShip.computerShips; ) {
+            	int x=(int)(Math.random() * 10);
+            	int y=(int)(Math.random() * 10);
+            	
+            	if ((x>=0 && x<rows )&& (y>=0 && y<cols) && matrix[x][y]==(" ")) {
+                    matrix[x][y] = "1";
+                    System.out.println(i + ". ship DEPLOYED");
+                    i++;
+                }
+            }
+           printOceanMap();
+        }
+       public static void Battle() {
+           playerTurn();
+           computerTurn();
+           printOceanMap();
+           System.out.println("\nYour ships: " +BattleShip.playersships + " | Computer ships: " + BattleShip.computerShips + "\n");
+       }
+       public static void playerTurn() {
+           System.out.println("\nYOUR TURN");
+           int x=-1, y=-1;
+           do {
+               System.out.print("Enter X coordinate: ");
+               x = input.nextInt();
+               System.out.print("Enter Y coordinate: ");
+               y = input.nextInt();
+               if ((x >= 0 && x < rows) && (y >= 0 && y < cols)) //valid guess
+               {
+                if (matrix[x][y].equals("1")) {
+                   System.out.println("Boom! You sunk the ship!");
+                   matrix[x][y] = "!";//hit mark
+                   --BattleShip.computerShips;
+               } else if (matrix[x][y].equals("1")) {
+                   System.out.println("Oh no, you sunk your own ship :(");
+                   matrix[x][y] = "!";
+                   --BattleShip.playersships;
+               } else if (matrix[x][y].equals(" ")) {
+                   System.out.println("Sorry, you missed");
+                   matrix[x][y] = "-";
+               }
+        	
+             }
+              else if ((x < 0 || x >= rows) || (y < 0 || y >= cols))  //invalid guess
+                   System.out.println("You can't place ships outside the " + rows + " by " + cols + " grid");
+           } while ((x < 0 || x >= rows) || (y < 0 || y >= cols));  //keep re-prompting till valid guess
+       }       
+       public static void computerTurn() {
+    	   System.out.println("\nCOMPUTER'S TURN");
+           int x=-1, y=-1;
+           do {
+           x = (int) (Math.random() * 10);
+           y = (int) (Math.random() * 10);
+           if ((x >= 0 && x < rows) && (y >= 0 && y < cols)) {
+        	   if(matrix[x][y]=="@") {
+               System.out.println("The Computer sunk one of your ships");
+               matrix[x][y] = "!";
+               --BattleShip.playersships;
+               ++BattleShip.computerShips;
+               
+           } else if (matrix[x][y]==("1")) {
+               System.out.println("The Computer sunk one of its own ships!");
+               matrix[x][y] = "!";
+           } else if (matrix[x][y]==(" ")) {
+               System.out.println("Computer missed");
+               if(missedguesses[x][y]!= 1)
+            	   missedguesses[x][y]=1;
+                }
+              }
+           }
+           while ((x < 0 || x >= rows) || (y < 0 || y >= cols));
+       }
+           public static void gameOver() {
+               System.out.println("Your ships: " + BattleShip.playersships + " | Computer ships: " + BattleShip.computerShips);
+               if (playersships > 0 && computerShips <= 0)
+                   System.out.println("Hooray! You won the battle :)");
+               else
+                   System.out.println("Sorry, you lost the battle");
+           }
+           
+      public static void printOceanMap() {
+    	  System.out.println();
+          //First section of Ocean Map
+          System.out.print("  ");
+          for(int i = 0; i < cols; i++)
+              System.out.print(i);
+          System.out.println();
+
+          //Middle section of Ocean Map
+          for(int x = 0; x < matrix.length; x++) {
+              System.out.print(x + "|");
+
+              for (int y = 0; y < matrix[x].length; y++){
+                  System.out.print(matrix[x][y]);
+              }
+
+              System.out.println("|" + x);
+          }
+
+          //Last section of Ocean Map
+          System.out.print("  ");
+          for(int i = 0; i < cols; i++)
+              System.out.print(i);
+          System.out.println();
+      }
+    	  
+}
